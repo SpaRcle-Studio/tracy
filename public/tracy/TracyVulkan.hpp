@@ -204,6 +204,9 @@ public:
 #if defined TRACY_VK_USE_SYMBOL_TABLE
         PopulateSymbolTable(instance, instanceProcAddr, deviceProcAddr);
         m_vkGetCalibratedTimestampsEXT = m_symbols.vkGetCalibratedTimestampsEXT;
+        m_pVkResetQueryPool = m_symbols.vkResetQueryPool;
+#else
+        m_pVkResetQueryPool = vkResetQueryPool;
 #endif
 
         TRACY_ASSERT( VK_FUNCTION_WRAPPER( vkResetQueryPool ) != nullptr );
@@ -261,7 +264,7 @@ public:
         {
             cmdbuf ?
                 VK_FUNCTION_WRAPPER( vkCmdResetQueryPool( cmdbuf, m_query, 0, m_queryCount ) ) :
-                VK_FUNCTION_WRAPPER( vkResetQueryPool( m_device, m_query, 0, m_queryCount ) );
+                m_pVkResetQueryPool( m_device, m_query, 0, m_queryCount );
             m_tail = head;
             m_oldCnt = 0;
             int64_t tgpu;
@@ -332,7 +335,7 @@ public:
 
         cmdbuf ?
             VK_FUNCTION_WRAPPER( vkCmdResetQueryPool( cmdbuf, m_query, wrappedTail, cnt ) ) :
-            VK_FUNCTION_WRAPPER( vkResetQueryPool( m_device, m_query, wrappedTail, cnt ) );
+            m_pVkResetQueryPool( m_device, m_query, wrappedTail, cnt );
 
         m_tail += cnt;
     }
@@ -531,6 +534,7 @@ private:
     int64_t* m_res;
 
     PFN_vkGetCalibratedTimestampsEXT m_vkGetCalibratedTimestampsEXT;
+    PFN_vkResetQueryPool m_pVkResetQueryPool = nullptr;
 };
 
 class VkCtxScope
