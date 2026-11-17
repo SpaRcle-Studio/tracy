@@ -692,6 +692,9 @@ static pthread_key_t _memory_thread_heap;
 #  else
 #    if defined(__ANDROID__) && __ANDROID_API__ >= 29 && defined(__NDK_MAJOR__) && __NDK_MAJOR__ >= 26
 #      define TLS_MODEL __attribute__((tls_model("local-dynamic")))
+#    elif defined(__linux__)
+// The engine loads Utils with dlopen after process startup.
+#      define TLS_MODEL __attribute__((tls_model("local-dynamic")))
 #    elif !defined(__HAIKU__)
 #      define TLS_MODEL __attribute__((tls_model("initial-exec")))
 #    else
